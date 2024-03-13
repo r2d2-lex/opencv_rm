@@ -8,6 +8,10 @@ async def handle_echo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     data = None
     while data != b'quit':
         data = await reader.read(1024)
+
+        if not data:
+            break
+
         msg = data.decode()
         addr, port = writer.get_extra_info('peername')
         print(f'Message from {addr}:{port} - {msg}')

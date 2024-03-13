@@ -1,8 +1,7 @@
 import asyncio
 import time
 
-HOST = '127.0.0.1'
-PORT = 15577
+from server2 import HOST, PORT
 
 
 async def run_client() -> None:
