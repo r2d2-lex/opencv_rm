@@ -1,4 +1,5 @@
-import asyncio, pickle
+import asyncio
+import pickle
 
 from mss import mss
 from PIL import Image
@@ -16,12 +17,11 @@ async def handle_echo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     with mss() as sct:
         while data != b'quit':
 
-            print('Start')
-            screenShot = sct.grab(mon)
+            screen_shot = sct.grab(mon)
             img = Image.frombytes(
                 'RGB',
-                (screenShot.width, screenShot.height),
-                screenShot.rgb,
+                (screen_shot.width, screen_shot.height),
+                screen_shot.rgb,
             )
 
             addr, port = writer.get_extra_info('peername')
@@ -36,8 +36,6 @@ async def handle_echo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter
 
             writer.write(img_pickled)
             await writer.drain()
-            print('Send end...')
-            # input('Y')
 
         print('Write closed....')
         writer.close()
