@@ -9,37 +9,37 @@ mon = {'left': 160, 'top': 160, 'width': 1024, 'height': 768}
 
 HOST = '127.0.0.1'
 PORT = 15577
+data = None
 
 
 async def handle_echo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-    data = None
+    addr, port = writer.get_extra_info('peername')
+    print(f'Connection from {addr}:{port}')
 
     with mss() as sct:
         while data != b'quit':
 
-            screen_shot = sct.grab(mon)
-            img = Image.frombytes(
-                'RGB',
-                (screen_shot.width, screen_shot.height),
-                screen_shot.rgb,
-            )
-
-            addr, port = writer.get_extra_info('peername')
-            print(f'Connection from {addr}:{port}')
-
+            img = sct.grab(mon)
             img_pickled = pickle.dumps(img)
             data_length = len(img_pickled)
-            print(f'data_length: {data_length}')
-            writer.write(str(data_length).encode())
-            writer.write(b'\r\n')
-            await writer.drain()
 
-            writer.write(img_pickled)
-            await writer.drain()
+            try:
+                writer.write(str(data_length).encode())
+                writer.write(b'\r\n')
+                await writer.drain()
 
+                writer.write(img_pickled)
+                await writer.drain()
+            except ConnectionResetError as err:
+                print(f'{err}')
+                break
+
+        try:
+            writer.close()
+            await writer.wait_closed()
+        except ConnectionResetError as err:
+            pass
         print('Write closed....')
-        writer.close()
-        await writer.wait_closed()
 
 
 async def run_server() -> None:
@@ -49,5 +49,6 @@ async def run_server() -> None:
 
 
 if __name__ == '__main__':
+    print('Start server...')
     loop = asyncio.new_event_loop()
     loop.run_until_complete(run_server())
