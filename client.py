@@ -4,6 +4,8 @@ import numpy as np
 import cv2
 import time
 
+import pyautogui
+
 from server2 import HOST, PORT
 
 CHUNK = 65536
@@ -14,9 +16,19 @@ WINDOWS_NAME = 'Test'
 def on_mouse(event, x, y, flags, param):
     global mouse_x, mouse_y
     if event == cv2.EVENT_LBUTTONDBLCLK:
-        cv2.circle(img, (x, y), 100, (255, 0, 0), -1)
         mouse_x, mouse_y = x, y
-        print(f'X: {mouse_x}, Y {mouse_y}')
+        print(f'EVENT_LBUTTONDBLCLK X: {mouse_x}, Y {mouse_y}')
+        # time.sleep(1)
+        # pyautogui.move(mouse_x, mouse_y)
+        # pyautogui.doubleClick(mouse_x, mouse_y)
+
+    elif event == cv2.EVENT_LBUTTONDOWN:
+        mouse_x, mouse_y = x, y
+        print(f'EVENT_LBUTTONDOWN X: {mouse_x}, Y {mouse_y}')
+
+    elif event == cv2.EVENT_RBUTTONDOWN:
+        mouse_x, mouse_y = x, y
+        print(f'EVENT_RBUTTONDOWN X: {mouse_x}, Y {mouse_y}')
 
 
 async def run_client() -> None:
@@ -57,6 +69,9 @@ async def run_client() -> None:
 
         img = pickle.loads(b"".join(data))
 
+        # cv2.namedWindow(WINDOWS_NAME, cv2.WND_PROP_FULLSCREEN)
+        # cv2.setWindowProperty(WINDOWS_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.namedWindow(WINDOWS_NAME, flags=cv2.WINDOW_GUI_NORMAL)
         cv2.imshow(WINDOWS_NAME, np.array(img))
         cv2.setMouseCallback(WINDOWS_NAME, on_mouse)
 
