@@ -2,7 +2,6 @@ import asyncio
 import pickle
 
 from mss import mss
-from PIL import Image
 
 mon = {'left': 160, 'top': 160, 'width': 1024, 'height': 768}
 
