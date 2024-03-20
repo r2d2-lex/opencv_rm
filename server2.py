@@ -2,8 +2,10 @@ import asyncio
 import pickle
 
 from mss import mss
+from utils import get_monitor_resolution
 
-mon = {'left': 160, 'top': 160, 'width': 1024, 'height': 768}
+# monitor = {'left': 160, 'top': 160, 'width': 1024, 'height': 768}
+monitor = {'left': 0, 'top': 0, 'width': 800, 'height': 600}
 
 
 HOST = '127.0.0.1'
@@ -14,11 +16,12 @@ data = None
 async def handle_echo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
     addr, port = writer.get_extra_info('peername')
     print(f'Connection from {addr}:{port}')
+    print(f'Capture settings: {monitor}')
 
     with mss() as sct:
         while data != b'quit':
 
-            img = sct.grab(mon)
+            img = sct.grab(monitor)
             img_pickled = pickle.dumps(img)
             data_length = len(img_pickled)
 
@@ -49,5 +52,10 @@ async def run_server() -> None:
 
 if __name__ == '__main__':
     print('Start server...')
+    width, height = get_monitor_resolution()
+    print(f'Resolution Width: {width} Height {height}')
+    # monitor['width'] = width
+    # monitor['height'] = height
+
     loop = asyncio.new_event_loop()
     loop.run_until_complete(run_server())

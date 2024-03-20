@@ -6,7 +6,9 @@ import time
 
 import pyautogui
 
-from server2 import HOST, PORT
+# from server2 import HOST, PORT
+from server2 import PORT
+HOST = '127.0.0.1'
 
 CHUNK = 65536
 img = None
