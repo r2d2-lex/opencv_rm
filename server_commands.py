@@ -31,11 +31,12 @@ def start_command(command):
             elif index == 2:
                 arg2 = int(arg)
             index += 1
+        print(f'Command: {cmd}, argument1: {arg1}, argument2: {arg2}')
 
         if cmd == EVENT_MOUSEMOVE:
             pyautogui.moveTo(arg1, arg2)
 
-        if cmd == EVENT_LBUTTONDBLCLK:
+        elif cmd == EVENT_LBUTTONDBLCLK:
             pyautogui.doubleClick(arg1, arg2)
 
         elif cmd == EVENT_LBUTTONDOWN:
