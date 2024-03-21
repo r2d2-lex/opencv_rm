@@ -1,16 +1,29 @@
 import asyncio
 import pickle
+import threading
 
 from mss import mss
 from utils import get_monitor_resolution
+from config import SERVER_HOST, SERVER_PORT, DATA_PORT
 
 # monitor = {'left': 160, 'top': 160, 'width': 1024, 'height': 768}
 monitor = {'left': 0, 'top': 0, 'width': 800, 'height': 600}
 
-
-HOST = '127.0.0.1'
-PORT = 15577
 data = None
+
+
+async def data_channel(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    addr, port = writer.get_extra_info('peername')
+    print(f'Open data channel from {addr}:{port}')
+    while True:
+        try:
+            packet = await reader.readline()
+        except ValueError:
+            # separator exception
+            print('Cant read size of object')
+            continue
+        command = packet.decode().rstrip()
+        print(f'Data channel command: {command}')
 
 
 async def handle_echo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
@@ -44,10 +57,15 @@ async def handle_echo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter
         print('Write closed....')
 
 
-async def run_server() -> None:
-    server = await asyncio.start_server(handle_echo, HOST, PORT)
+async def run_server(handle, host, port) -> None:
+    server = await asyncio.start_server(handle, host, port)
     async with server:
         await server.serve_forever()
+
+
+def start_server(handle, host, port):
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(run_server(handle, host, port))
 
 
 if __name__ == '__main__':
@@ -57,5 +75,17 @@ if __name__ == '__main__':
     # monitor['width'] = width
     # monitor['height'] = height
 
-    loop = asyncio.new_event_loop()
-    loop.run_until_complete(run_server())
+    screen_thread = threading.Thread(
+        target=start_server,
+        args=(handle_echo, SERVER_HOST, SERVER_PORT),
+        daemon=True,
+    )
+    data_thread = threading.Thread(
+        target=start_server,
+        args=(data_channel, SERVER_HOST, DATA_PORT),
+        daemon=True,
+    )
+    screen_thread.start()
+    data_thread.start()
+    data_thread.join()
+    screen_thread.join()

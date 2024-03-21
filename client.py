@@ -1,41 +1,60 @@
 import asyncio
 import pickle
+import threading
+from queue import Queue
+
 import numpy as np
 import cv2
 import time
 
 import pyautogui
 
-# from server2 import HOST, PORT
-from server2 import PORT
-HOST = '127.0.0.1'
+from config import SERVER_HOST, SERVER_PORT, DATA_PORT
 
 CHUNK = 65536
 img = None
 WINDOWS_NAME = 'Test'
+queue = Queue()
 
 
 def on_mouse(event, x, y, flags, param):
     global mouse_x, mouse_y
     if event == cv2.EVENT_LBUTTONDBLCLK:
         mouse_x, mouse_y = x, y
-        print(f'EVENT_LBUTTONDBLCLK X: {mouse_x}, Y {mouse_y}')
+        command = f'EVENT_LBUTTONDBLCLK X: {mouse_x}, Y {mouse_y}'
+        print(command)
+        queue.put(command)
         # time.sleep(1)
         # pyautogui.move(mouse_x, mouse_y)
         # pyautogui.doubleClick(mouse_x, mouse_y)
 
     elif event == cv2.EVENT_LBUTTONDOWN:
         mouse_x, mouse_y = x, y
-        print(f'EVENT_LBUTTONDOWN X: {mouse_x}, Y {mouse_y}')
+        command =f'EVENT_LBUTTONDOWN X: {mouse_x}, Y {mouse_y}'
+        print(command)
+        queue.put(command)
 
     elif event == cv2.EVENT_RBUTTONDOWN:
         mouse_x, mouse_y = x, y
-        print(f'EVENT_RBUTTONDOWN X: {mouse_x}, Y {mouse_y}')
+        command =f'EVENT_RBUTTONDOWN X: {mouse_x}, Y {mouse_y}'
+        print(command)
+        queue.put(command)
+
+
+async def data_channel_client() -> None:
+    reader, writer = await asyncio.open_connection(SERVER_HOST, DATA_PORT)
+    print('Open data channel')
+    while True:
+        data = queue.get()
+        print(f'Put data channel: {data}')
+        writer.write(str(data).encode())
+        writer.write(b'\r\n')
+        await writer.drain()
 
 
 async def run_client() -> None:
-    reader, writer = await asyncio.open_connection(HOST, PORT)
-
+    reader, writer = await asyncio.open_connection(SERVER_HOST, SERVER_PORT)
+    print('Start screen client')
     num_frames = 0
     start = time.time()
     while True:
@@ -73,7 +92,7 @@ async def run_client() -> None:
 
         # cv2.namedWindow(WINDOWS_NAME, cv2.WND_PROP_FULLSCREEN)
         # cv2.setWindowProperty(WINDOWS_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-        cv2.namedWindow(WINDOWS_NAME, flags=cv2.WINDOW_GUI_NORMAL)
+        # cv2.namedWindow(WINDOWS_NAME, flags=cv2.WINDOW_GUI_NORMAL)
         cv2.imshow(WINDOWS_NAME, np.array(img))
         cv2.setMouseCallback(WINDOWS_NAME, on_mouse)
 
@@ -87,6 +106,27 @@ async def run_client() -> None:
     return
 
 
-if __name__ == '__main__':
+def start_screen_client():
     loop = asyncio.new_event_loop()
     loop.run_until_complete(run_client())
+
+
+def start_data_client():
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(data_channel_client())
+
+
+if __name__ == '__main__':
+    screen_thread = threading.Thread(
+        target=start_screen_client,
+        daemon=True,
+    )
+    data_thread = threading.Thread(
+        target=start_data_client,
+        daemon=True,
+    )
+    screen_thread.start()
+    data_thread.start()
+    data_thread.join()
+    screen_thread.join()
+
