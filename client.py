@@ -16,7 +16,7 @@ queue = Queue()
 
 
 def on_mouse(event, mouse_x, mouse_y, flags, param):
-    command = 'other mouse command *'
+    command = '*'
     if event == cv2.EVENT_MOUSEMOVE:
         command = f'{EVENT_MOUSEMOVE} {mouse_x} {mouse_y}'
 
