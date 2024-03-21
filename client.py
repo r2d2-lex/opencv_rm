@@ -1,58 +1,54 @@
 import asyncio
-import pickle
-import threading
-from queue import Queue
-
-import numpy as np
 import cv2
+import pickle
+import numpy as np
+import threading
 import time
 
-import pyautogui
+from queue import Queue
 
 from config import SERVER_HOST, SERVER_PORT, DATA_PORT
+from server_commands import EVENT_MOUSEMOVE, EVENT_RBUTTONDOWN, EVENT_LBUTTONDOWN, EVENT_LBUTTONDBLCLK, QUIT_COMMAND
 
 CHUNK = 65536
-img = None
 WINDOWS_NAME = 'Test'
 queue = Queue()
 
 
-def on_mouse(event, x, y, flags, param):
-    global mouse_x, mouse_y
-    if event == cv2.EVENT_LBUTTONDBLCLK:
-        mouse_x, mouse_y = x, y
-        command = f'EVENT_LBUTTONDBLCLK X: {mouse_x}, Y {mouse_y}'
-        print(command)
-        queue.put(command)
-        # time.sleep(1)
-        # pyautogui.move(mouse_x, mouse_y)
-        # pyautogui.doubleClick(mouse_x, mouse_y)
+def on_mouse(event, mouse_x, mouse_y, flags, param):
+    command = 'other mouse command *'
+    if event == cv2.EVENT_MOUSEMOVE:
+        command = f'{EVENT_MOUSEMOVE} {mouse_x} {mouse_y}'
+
+    elif event == cv2.EVENT_LBUTTONDBLCLK:
+        command = f'{EVENT_LBUTTONDBLCLK} {mouse_x} {mouse_y}'
 
     elif event == cv2.EVENT_LBUTTONDOWN:
-        mouse_x, mouse_y = x, y
-        command =f'EVENT_LBUTTONDOWN X: {mouse_x}, Y {mouse_y}'
-        print(command)
-        queue.put(command)
+        command = f'{EVENT_LBUTTONDOWN} {mouse_x} {mouse_y}'
 
     elif event == cv2.EVENT_RBUTTONDOWN:
-        mouse_x, mouse_y = x, y
-        command =f'EVENT_RBUTTONDOWN X: {mouse_x}, Y {mouse_y}'
-        print(command)
-        queue.put(command)
+        command = f'{EVENT_RBUTTONDOWN} {mouse_x} {mouse_y}'
+
+    queue.put(command)
+    return
 
 
 async def data_channel_client() -> None:
     reader, writer = await asyncio.open_connection(SERVER_HOST, DATA_PORT)
     print('Open data channel')
     while True:
-        data = queue.get()
-        print(f'Put data channel: {data}')
-        writer.write(str(data).encode())
+        command = queue.get()
+        print(f'Put data channel: {command}')
+        writer.write(str(command).encode())
         writer.write(b'\r\n')
         await writer.drain()
+        if command == QUIT_COMMAND:
+            break
+    print('Close data channel...')
+    return
 
 
-async def run_client() -> None:
+async def screen_client() -> None:
     reader, writer = await asyncio.open_connection(SERVER_HOST, SERVER_PORT)
     print('Start screen client')
     num_frames = 0
@@ -98,6 +94,7 @@ async def run_client() -> None:
 
         if (cv2.waitKey(1) & 0xFF) == ord('q'):
             cv2.destroyAllWindows()
+            queue.put(QUIT_COMMAND)
             break
         end = time.time()
         seconds = end - start
@@ -108,7 +105,7 @@ async def run_client() -> None:
 
 def start_screen_client():
     loop = asyncio.new_event_loop()
-    loop.run_until_complete(run_client())
+    loop.run_until_complete(screen_client())
 
 
 def start_data_client():

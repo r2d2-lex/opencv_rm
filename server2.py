@@ -3,8 +3,10 @@ import pickle
 import threading
 
 from mss import mss
-from utils import get_monitor_resolution
+
+from server_commands import *
 from config import SERVER_HOST, SERVER_PORT, DATA_PORT
+from utils import get_monitor_resolution
 
 # monitor = {'left': 160, 'top': 160, 'width': 1024, 'height': 768}
 monitor = {'left': 0, 'top': 0, 'width': 800, 'height': 600}
@@ -20,10 +22,15 @@ async def data_channel(reader: asyncio.StreamReader, writer: asyncio.StreamWrite
             packet = await reader.readline()
         except ValueError:
             # separator exception
-            print('Cant read size of object')
-            continue
+            print('Cant read')
+            break
         command = packet.decode().rstrip()
         print(f'Data channel command: {command}')
+        if command == QUIT_COMMAND:
+            break
+    writer.close()
+    await writer.wait_closed()
+    print(f'Data channel closed from: {addr}:{port}')
 
 
 async def handle_echo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
