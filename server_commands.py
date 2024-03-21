@@ -12,31 +12,42 @@ ARG3 = 3
 
 
 def start_command(command):
+    pyautogui.PAUSE = 1
+    pyautogui.FAILSAFE = True
+    cmd = ''
+    arg1 = ''
+    arg2 = ''
+
     command = command.split()
 
-    index = 0
-    for arg in command:
-        print(f'Index {index} arg: {arg}')
-        index += 1
-
     try:
-        cmd = command[COMMAND]
+        index = 0
+        for arg in command:
+            print(f'Index {index} arg: {arg}')
+            if index == 0:
+                cmd = str(arg)
+            elif index == 1:
+                arg1 = int(arg)
+            elif index == 2:
+                arg2 = int(arg)
+            index += 1
+
         if cmd == EVENT_MOUSEMOVE:
-            pyautogui.move(command[ARG1], command[ARG2])
+            pyautogui.moveTo(arg1, arg2)
 
         if cmd == EVENT_LBUTTONDBLCLK:
-            pyautogui.doubleClick(command[ARG1], command[ARG2])
+            pyautogui.doubleClick(arg1, arg2)
 
         elif cmd == EVENT_LBUTTONDOWN:
-            pyautogui.leftClick(command[ARG1], command[ARG2])
+            pyautogui.leftClick(arg1, arg2)
 
         elif cmd == EVENT_RBUTTONDOWN:
-            pyautogui.rightClick(command[ARG1], command[ARG2])
+            pyautogui.rightClick(arg1, arg2)
 
         else:
             print(f'Other command {cmd}')
 
-    except IndexError as error:
+    except (IndexError, ValueError) as error:
         print(f'Unknown command: {command} - {error}')
 
     print('\r\n')
