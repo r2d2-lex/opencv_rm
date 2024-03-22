@@ -25,9 +25,9 @@ async def data_channel(reader: asyncio.StreamReader, writer: asyncio.StreamWrite
             print('Cant read')
             break
         command = packet.decode().rstrip()
-        if command == QUIT_COMMAND:
+        if command == QUIT_COMMAND or not command:
             break
-        start_command(command)
+        threading.Thread(target=start_command, args=(command,), daemon=True).start()
     writer.close()
     await writer.wait_closed()
     print(f'Data channel closed from: {addr}:{port}')

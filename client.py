@@ -16,20 +16,23 @@ queue = Queue()
 
 
 def on_mouse(event, mouse_x, mouse_y, flags, param):
-    command = '*'
     if event == cv2.EVENT_MOUSEMOVE:
         command = f'{EVENT_MOUSEMOVE} {mouse_x} {mouse_y}'
+        queue.put(command)
 
-    elif event == cv2.EVENT_LBUTTONDBLCLK:
+    if event == cv2.EVENT_LBUTTONDBLCLK:
         command = f'{EVENT_LBUTTONDBLCLK} {mouse_x} {mouse_y}'
+        queue.put(command)
 
     elif event == cv2.EVENT_LBUTTONDOWN:
         command = f'{EVENT_LBUTTONDOWN} {mouse_x} {mouse_y}'
+        queue.put(command)
 
     elif event == cv2.EVENT_RBUTTONDOWN:
         command = f'{EVENT_RBUTTONDOWN} {mouse_x} {mouse_y}'
+        queue.put(command)
 
-    queue.put(command)
+    # queue.put(command)
     return
 
 
