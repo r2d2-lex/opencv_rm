@@ -27,7 +27,8 @@ async def data_channel(reader: asyncio.StreamReader, writer: asyncio.StreamWrite
         command = packet.decode().rstrip()
         if command == QUIT_COMMAND or not command:
             break
-        threading.Thread(target=start_command, args=(command,), daemon=True).start()
+        start_command(command)
+        # threading.Thread(target=start_command, args=(command,), daemon=True).start()
     writer.close()
     await writer.wait_closed()
     print(f'Data channel closed from: {addr}:{port}')
@@ -59,7 +60,7 @@ async def handle_echo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter
         try:
             writer.close()
             await writer.wait_closed()
-        except ConnectionResetError as err:
+        except (ConnectionResetError, BrokenPipeError) as err:
             pass
         print('Write closed....')
 

@@ -12,8 +12,8 @@ ARG3 = 3
 
 
 def start_command(command):
-    pyautogui.PAUSE = 1
-    pyautogui.FAILSAFE = True
+    pyautogui.PAUSE = 0
+    pyautogui.FAILSAFE = False
     cmd = ''
     arg1 = ''
     arg2 = ''
@@ -23,7 +23,6 @@ def start_command(command):
     try:
         index = 0
         for arg in command:
-            print(f'Index {index} arg: {arg}')
             if index == 0:
                 cmd = str(arg)
             elif index == 1:
