@@ -20,7 +20,7 @@ def on_mouse(event, mouse_x, mouse_y, flags, param):
         command = f'{EVENT_MOUSEMOVE} {mouse_x} {mouse_y}'
         queue.put(command)
 
-    if event == cv2.EVENT_LBUTTONDBLCLK:
+    elif event == cv2.EVENT_LBUTTONDBLCLK:
         command = f'{EVENT_LBUTTONDBLCLK} {mouse_x} {mouse_y}'
         queue.put(command)
 
