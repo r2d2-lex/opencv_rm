@@ -5,6 +5,13 @@ EVENT_LBUTTONDBLCLK = 'EVENT_LBUTTONDBLCLK'
 EVENT_LBUTTONDOWN = 'EVENT_LBUTTONDOWN'
 EVENT_RBUTTONDOWN = 'EVENT_RBUTTONDOWN'
 EVENT_MOUSEMOVE = 'EVENT_MOUSEMOVE'
+EVENT_KB_KEY = 'EVENT_KEYBOARD'
+MOUSE_EVENTS = [
+    EVENT_LBUTTONDBLCLK,
+    EVENT_LBUTTONDOWN,
+    EVENT_RBUTTONDOWN,
+    EVENT_MOUSEMOVE,
+]
 COMMAND = 0
 ARG1 = 1
 ARG2 = 2
@@ -26,9 +33,15 @@ def start_command(command):
             if index == 0:
                 cmd = str(arg)
             elif index == 1:
-                arg1 = int(arg)
+                if cmd in MOUSE_EVENTS:
+                    arg1 = int(arg)
+                else:
+                    arg1 = str(arg)
             elif index == 2:
-                arg2 = int(arg)
+                if cmd in MOUSE_EVENTS:
+                    arg2 = int(arg)
+                else:
+                    arg2 = str(arg)
             index += 1
         print(f'Command: {cmd}, argument1: {arg1}, argument2: {arg2}')
 
@@ -43,6 +56,9 @@ def start_command(command):
 
         elif cmd == EVENT_RBUTTONDOWN:
             pyautogui.rightClick(arg1, arg2)
+
+        elif cmd == EVENT_KB_KEY:
+            pyautogui.press(arg1)
 
         else:
             print(f'Other command {cmd}')

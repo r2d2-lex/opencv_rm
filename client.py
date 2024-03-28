@@ -9,7 +9,8 @@ from pynput.keyboard import Key, Listener
 from queue import Queue
 
 from config import SERVER_HOST, SERVER_PORT, DATA_PORT
-from server_commands import EVENT_MOUSEMOVE, EVENT_RBUTTONDOWN, EVENT_LBUTTONDOWN, EVENT_LBUTTONDBLCLK, QUIT_COMMAND
+from server_commands import (EVENT_MOUSEMOVE, EVENT_RBUTTONDOWN, EVENT_LBUTTONDOWN, EVENT_LBUTTONDBLCLK, QUIT_COMMAND,
+                             EVENT_KB_KEY)
 from utils import get_active_window_title, detect_os
 
 CHUNK = 65536
@@ -99,6 +100,9 @@ def on_press(key):
         current_keys.add(key)
         if frozenset(current_keys) in combination_to_function:
             combination_to_function[frozenset(current_keys)]()
+        else:
+            command = f'{EVENT_KB_KEY} {str(key)}'
+            queue.put(command)
 
 
 def on_release(key):
