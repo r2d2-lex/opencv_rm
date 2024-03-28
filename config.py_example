@@ -1,3 +1,4 @@
 SERVER_HOST = '127.0.0.1'
 SERVER_PORT = 15577
 DATA_PORT = 15578
+XDT_TOOL_INFO = '/usr/bin/xdotool getactivewindow getwindowname'

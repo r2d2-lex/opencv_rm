@@ -5,22 +5,26 @@ import numpy as np
 import threading
 import time
 
+from pynput.keyboard import Key, Listener
 from queue import Queue
 
 from config import SERVER_HOST, SERVER_PORT, DATA_PORT
 from server_commands import EVENT_MOUSEMOVE, EVENT_RBUTTONDOWN, EVENT_LBUTTONDOWN, EVENT_LBUTTONDBLCLK, QUIT_COMMAND
+from utils import get_active_window_title, detect_os
 
 CHUNK = 65536
-WINDOWS_NAME = 'Test'
+WINDOWS_NAME = 'opencv_rm Test'
 queue = Queue()
+CLIENT_OS = detect_os()
 
 
 def on_mouse(event, mouse_x, mouse_y, flags, param):
-    if event == cv2.EVENT_MOUSEMOVE:
-        command = f'{EVENT_MOUSEMOVE} {mouse_x} {mouse_y}'
-        queue.put(command)
+    # if event == cv2.EVENT_MOUSEMOVE:
+    #     command = f'{EVENT_MOUSEMOVE} {mouse_x} {mouse_y}'
+    #     queue.put(command)
 
-    elif event == cv2.EVENT_LBUTTONDBLCLK:
+    # elif event == cv2.EVENT_LBUTTONDBLCLK:
+    if event == cv2.EVENT_LBUTTONDBLCLK:
         command = f'{EVENT_LBUTTONDBLCLK} {mouse_x} {mouse_y}'
         queue.put(command)
 
@@ -34,6 +38,72 @@ def on_mouse(event, mouse_x, mouse_y, flags, param):
 
     # queue.put(command)
     return
+
+
+def up():
+    print("Go up")
+
+
+def down():
+    print("Go down")
+
+
+def left():
+    print("Go left")
+
+
+def right():
+    print("Go right")
+
+
+def up_left():
+    print("Go up_left")
+
+
+def up_right():
+    print("Go up_right")
+
+
+def down_left():
+    print("Go down_left")
+
+
+def down_right():
+    print("Go down_right")
+
+
+def do_nothing():
+    print("Do Nothing")
+
+
+combination_to_function = {
+    frozenset([Key.up]): up,
+    frozenset([Key.down, ]): down,
+    frozenset([Key.left, ]): left,
+    frozenset([Key.right, ]): right,
+    frozenset([Key.up, Key.left]): up_left,
+    frozenset([Key.up, Key.right]): up_right,
+    frozenset([Key.down, Key.left]): down_left,
+    frozenset([Key.down, Key.right]): down_right,
+}
+
+current_keys = set()
+
+
+def on_press(key):
+    window = get_active_window_title(CLIENT_OS)
+    print(window)
+
+    if WINDOWS_NAME in window:
+        print('{0} pressed'.format(key))
+        current_keys.add(key)
+        if frozenset(current_keys) in combination_to_function:
+            combination_to_function[frozenset(current_keys)]()
+
+
+def on_release(key):
+    if key in current_keys:
+        current_keys.remove(key)
 
 
 async def data_channel_client() -> None:
@@ -55,6 +125,9 @@ async def screen_client() -> None:
     reader, writer = await asyncio.open_connection(SERVER_HOST, SERVER_PORT)
     print('Start screen client')
     num_frames = 0
+    listener = Listener(on_press=on_press, on_release=on_release, )
+    listener.start()
+
     start = time.time()
     while True:
         num_frames += 1
@@ -103,6 +176,7 @@ async def screen_client() -> None:
         seconds = end - start
         fps = num_frames / seconds
         # print("FPS : {0}".format(fps))
+    listener.stop()
     return
 
 
