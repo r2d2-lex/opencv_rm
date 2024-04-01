@@ -1,4 +1,4 @@
-import psutil
+# import psutil
 import subprocess
 
 from sys import platform
@@ -22,8 +22,9 @@ def get_active_window_title(os):
     active_window_name = None
     if os == WINDOWS_PLATFORM:
         try:
-            active_window_name = psutil.Process(
-                win32process.GetWindowThreadProcessId(win32gui.GetForegroundWindow())[1]).name()
+            pass
+            # active_window_name = psutil.Process(
+            #     win32process.GetWindowThreadProcessId(win32gui.GetForegroundWindow())[1]).name()
         except Exception:
             pass
     elif os == LINUX_PLATFORM:

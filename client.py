@@ -22,22 +22,21 @@ CLIENT_OS = detect_os()
 def on_mouse(event, mouse_x, mouse_y, flags, param):
     # if event == cv2.EVENT_MOUSEMOVE:
     #     command = f'{EVENT_MOUSEMOVE} {mouse_x} {mouse_y}'
-    #     queue.put(command)
 
     # elif event == cv2.EVENT_LBUTTONDBLCLK:
     if event == cv2.EVENT_LBUTTONDBLCLK:
         command = f'{EVENT_LBUTTONDBLCLK} {mouse_x} {mouse_y}'
-        queue.put(command)
 
     elif event == cv2.EVENT_LBUTTONDOWN:
         command = f'{EVENT_LBUTTONDOWN} {mouse_x} {mouse_y}'
-        queue.put(command)
 
     elif event == cv2.EVENT_RBUTTONDOWN:
         command = f'{EVENT_RBUTTONDOWN} {mouse_x} {mouse_y}'
-        queue.put(command)
 
-    # queue.put(command)
+    else:
+        return
+
+    queue.put(command)
     return
 
 
@@ -93,16 +92,15 @@ current_keys = set()
 
 def on_press(key):
     window = get_active_window_title(CLIENT_OS)
-    print(window)
+    print(f'{window} key pressed: {key} type: {type(key)}')
 
     if WINDOWS_NAME in window:
-        print('{0} pressed'.format(key))
         current_keys.add(key)
         if frozenset(current_keys) in combination_to_function:
             combination_to_function[frozenset(current_keys)]()
         else:
-            command = f'{EVENT_KB_KEY} {str(key)}'
-            queue.put(command)
+            k = str(key).replace("'", "")
+            queue.put(f'{EVENT_KB_KEY} {k}')
 
 
 def on_release(key):
