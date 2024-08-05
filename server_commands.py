@@ -24,6 +24,7 @@ KEY_CTRL_R = 'Key.ctrl_r'
 KEY_BACKSPACE = 'Key.backspace'
 KEY_ALT_R = 'Key.alt_r'
 KEY_ALT = 'Key.alt'
+KEY_SPACE = 'Key.space'
 
 KB_ACTIONS = {
     KEY_CTRL: 'ctrl',
@@ -35,6 +36,7 @@ KB_ACTIONS = {
     KEY_SHIFT_R: 'shiftright',
     KEY_CTRL_R: 'ctrlright',
     KEY_BACKSPACE: 'backspace',
+    KEY_SPACE: 'space',
     KEY_ALT_R: 'altright',
     KEY_ALT: 'alt',
 }
